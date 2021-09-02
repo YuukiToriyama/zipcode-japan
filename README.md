@@ -1,5 +1,7 @@
 # zipcode-japan
 
+![https://i.imgur.com/jhDECiE.gif](https://i.imgur.com/jhDECiE.gif)
+
 (株)日本郵政の[郵便番号データダウンロード](https://www.post.japanpost.jp/zipcode/download.html)より取得した日本全国の郵便番号データをJSON形式に加工し、
 GitHub Pages上で公開しています。
 
