@@ -1,0 +1,31 @@
+{
+  "name": "zipcode-japan",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YUUKIToriyama/zipcode-japan.git"
+  },
+  "keywords": [
+    "zipcode"
+  ],
+  "author": "YUUKIToriyama <github@toriyama.dev>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YUUKIToriyama/zipcode-japan/issues"
+  },
+  "homepage": "https://github.com/YUUKIToriyama/zipcode-japan#readme",
+  "devDependencies": {
+    "@types/adm-zip": "^0.4.34",
+    "adm-zip": "^0.5.5",
+    "axios": "^0.21.1",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.4.2"
+  }
+}
