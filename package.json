@@ -24,10 +24,12 @@
   "homepage": "https://github.com/YUUKIToriyama/zipcode-japan#readme",
   "devDependencies": {
     "@types/adm-zip": "^0.4.34",
+    "@types/progress": "^2.0.5",
     "adm-zip": "^0.5.5",
     "axios": "^0.21.1",
     "csv-parse": "^4.16.2",
     "iconv-lite": "^0.6.3",
+    "progress": "^2.0.3",
     "rimraf": "^3.0.2",
     "typescript": "^4.4.2"
   }

@@ -3,6 +3,7 @@ import axios from 'axios';
 import * as AdmZip from 'adm-zip';
 import * as iconv from 'iconv-lite';
 import * as parse from 'csv-parse/lib/sync';
+import * as ProgressBar from 'progress';
 
 fs.mkdir("./public", error => {
 	if (error) {
@@ -27,6 +28,9 @@ axios.get(url, {
 				return records.slice(2, 9)
 			}
 		});
+		const progressBar = new ProgressBar(":bar :percent", {
+			total: csv.length
+		});
 		csv.forEach(row => {
 			const zipCode = row[0];
 			fs.mkdir("./public/" + zipCode.slice(0, 3), () => {
@@ -44,6 +48,8 @@ axios.get(url, {
 			fs.writeFile("./public/" + zipCode.slice(0, 3) + "/" + zipCode.slice(3, 7) + ".json", JSON.stringify(json), error => {
 				if (error) {
 					throw Error;
+				} else {
+					progressBar.tick();
 				}
 			});
 		})
