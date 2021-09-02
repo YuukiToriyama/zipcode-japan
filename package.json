@@ -1,11 +1,10 @@
 {
   "name": "zipcode-japan",
   "version": "0.1.0",
-  "description": "",
+  "description": "zipcode to address API",
   "main": "dist/main.js",
   "scripts": {
-    "clean": "rimraf dist",
-    "build:dist": "npm run clean && tsc",
+    "build:dist": "rimraf dist && tsc",
     "build:public": "rimraf public && node dist/main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
