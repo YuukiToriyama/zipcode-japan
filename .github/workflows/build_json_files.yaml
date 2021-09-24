@@ -26,3 +26,11 @@ jobs:
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./public
+      - name: Archive
+        run: zip monthly_update.zip -r ./public
+      - name: Create a release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: monthly_update.zip
+          tag_name: $(date +'%Y-%m-%d')
+          token: ${{ secrets.ACTIONS_DEPLOY_KEY }}
