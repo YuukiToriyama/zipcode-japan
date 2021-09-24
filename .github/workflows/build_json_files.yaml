@@ -33,7 +33,11 @@ jobs:
         with:
           github_token: ${{ github.token }}
       - name: Create a release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: monthly_update.zip
+          tag_name: ${{ github.ref }}
+          release_name: Release $(date +'%Y-%m-%d')
+          body: |
+            Release
