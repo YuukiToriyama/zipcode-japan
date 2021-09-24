@@ -28,8 +28,11 @@ jobs:
           publish_dir: ./public
       - name: Archive
         run: zip monthly_update.zip -r ./public
+      - name: Create a tag
+        uses: mathieudutour/github-tag-action@v5.6
+        with:
+          github_token: ${{ secrets.ACTIONS_DEPLOY_KEY }}
       - name: Create a release
         uses: softprops/action-gh-release@v1
         with:
           files: monthly_update.zip
-          tag_name: $(date +'%Y-%m-%d')
