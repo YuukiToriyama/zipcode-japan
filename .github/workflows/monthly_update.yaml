@@ -1,8 +1,7 @@
-name: Build JSON files
+name: Monthly Update
 on:
-  push:
-    branches:
-      - "main"
+  schedule:
+    - cron: '0 0 1 * *'
 jobs:
   build:
     runs-on: ubuntu-latest
