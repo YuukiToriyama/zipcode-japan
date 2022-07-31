@@ -1,5 +1,7 @@
 use std::io::Write;
 
+use serde_json::{json, value};
+
 #[tokio::main]
 async fn main() {
     match std::fs::create_dir("./tmp") {
@@ -59,6 +61,24 @@ async fn main() {
     for file_name in file_names.iter() {
         let downloaded_file_path = fetch_archive(base_url, file_name).await.unwrap();
         let extracted_item_path = unzip_archive(&downloaded_file_path).unwrap();
+        // CSVファイルのエンコーディングがShift-JISなのでUTF-8に変換
+        let csv_file = std::fs::read(extracted_item_path).unwrap();
+        let (res,_,_) = encoding_rs::SHIFT_JIS.decode(&csv_file);
+        // CSVをパースする
+        let mut reader = csv::Reader::from_reader(res.as_bytes());
+        for record in reader.records() {
+            let values = record.unwrap();
+            let json = json!({
+                "zipCode": values.get(2),
+                "pref": values.get(6),
+                "prefKana": values.get(3),
+                "city": values.get(7),
+                "cityName": values.get(4),
+                "town": values.get(8),
+                "townName": values.get(5)
+            });
+            println!("{}", json.to_string());
+        }
     }
 }
 
