@@ -1,4 +1,6 @@
+use csv::StringRecord;
 use serde_json::json;
+use std::fs;
 use std::io::Write;
 use std::path::Path;
 
@@ -58,46 +60,29 @@ const PUBLISH_DIR: &str = "./public";
 #[tokio::main]
 async fn main() {
     // 一時ファイルを保存するディレクトリを作成
-    match std::fs::create_dir(TEMPORARY_DIR) {
-        Ok(_) => {}
-        Err(error) => panic!("{}", error),
+    match fs::create_dir(TEMPORARY_DIR) {
+        Ok(_) => println!("📁New directory was created. {}", TEMPORARY_DIR),
+        Err(error) => panic!("⚠Error occurs. {}", error),
     }
     // 生成したJSONファイルを保存するディレクトリを作成
-    match std::fs::create_dir(PUBLISH_DIR) {
-        Ok(_) => {}
-        Err(error) => panic!("{}", error),
+    match fs::create_dir(PUBLISH_DIR) {
+        Ok(_) => println!("📁New directory was created. {}", PUBLISH_DIR),
+        Err(error) => panic!("⚠Error occurs. {}", error),
     }
     // 47都道府県について順番に処理していく
     for file_name in FILE_NAMES.iter() {
-        let downloaded_file_path = fetch_archive(file_name).await.unwrap();
-        let extracted_item_path = unzip_archive(&downloaded_file_path).unwrap();
+        let zip_file_path = fetch_archive(file_name).await.unwrap();
+        let unzipped_item_path = unzip_archive(&zip_file_path).unwrap();
         // CSVファイルのエンコーディングがShift-JISなのでUTF-8に変換
-        let csv_file = std::fs::read(extracted_item_path).unwrap();
+        let csv_file = fs::read(unzipped_item_path).unwrap();
         let (res, _, _) = encoding_rs::SHIFT_JIS.decode(&csv_file);
         // CSVをパースする
         let mut reader = csv::Reader::from_reader(res.as_bytes());
         for record in reader.records() {
-            let values = record.unwrap();
-            let json = json!({
-                "zipCode": values.get(2).unwrap(),
-                "pref": values.get(6).unwrap(),
-                "prefKana": values.get(3).unwrap(),
-                "city": values.get(7).unwrap(),
-                "cityName": values.get(4).unwrap(),
-                "town": values.get(8).unwrap(),
-                "townName": values.get(5)
-            });
-            // 郵便番号を前3桁と後4桁に分離する
-            let zip_code = ZipCode::new(values.get(2).unwrap());
-            // 前3桁でディレクトリを作成
-            let target_dir = format!("{}/{}", PUBLISH_DIR, zip_code.pre);
-            if !Path::new(&target_dir).exists() {
-                std::fs::create_dir(target_dir).unwrap();
+            match record {
+                Ok(values) => save_as_json(&values),
+                Err(error) => panic!("⚠Error occurs. {}", error),
             }
-            // JSONファイルを保存する
-            let file_path = format!("{}/{}/{}.json", PUBLISH_DIR, zip_code.pre, zip_code.post);
-            let mut file = std::fs::File::create(file_path).unwrap();
-            file.write_all(json.to_string().as_bytes()).unwrap();
         }
     }
 }
@@ -131,19 +116,22 @@ async fn fetch_archive(file_name: &str) -> Result<String, Box<dyn std::error::Er
     };
     // zipファイルを作成
     let file_path = format!("{}/{}", TEMPORARY_DIR, file_name);
-    let mut zip_file = match std::fs::File::create(&file_path) {
+    let mut zip_file = match fs::File::create(&file_path) {
         Ok(file) => file,
         Err(_error) => panic!("[{}] ファイルを作成することができませんでした", file_name),
     };
     // zipファイルにデータを書き込む
     let binary = response.bytes().await.unwrap();
-    zip_file.write_all(&binary).unwrap();
+    match zip_file.write_all(&binary) {
+        Ok(_) => println!("🗒️New file was created. {}", &file_path),
+        Err(error) => panic!("⚠Error occurs. {}", error),
+    }
     Ok(file_path)
 }
 
 fn unzip_archive(file_path: &String) -> Result<String, zip::result::ZipError> {
     // ZipArchiveに読み込ませるために再度ファイルを開く
-    let zip_file = std::fs::File::open(file_path).unwrap();
+    let zip_file = fs::File::open(file_path).unwrap();
     // ZipArchiveでzipファイルを展開
     let mut unzipped = match zip::ZipArchive::new(zip_file) {
         Ok(archive) => archive,
@@ -153,7 +141,40 @@ fn unzip_archive(file_path: &String) -> Result<String, zip::result::ZipError> {
     let extracted_item_path = extracted_item.enclosed_name().unwrap();
     // 展開されたファイルを保存
     let file_path = format!("{}/{}", TEMPORARY_DIR, extracted_item_path.display());
-    let mut out_file = std::fs::File::create(&file_path).unwrap();
-    std::io::copy(&mut extracted_item, &mut out_file).unwrap();
+    let mut out_file = fs::File::create(&file_path).unwrap();
+    match std::io::copy(&mut extracted_item, &mut out_file) {
+        Ok(_) => println!("🗒️New file was created. {}", &file_path),
+        Err(error) => panic!("⚠Error occurs. {}", error),
+    }
     Ok(file_path)
+}
+
+fn save_as_json(values: &StringRecord) {
+    // JSON構造体を作成
+    let json = json!({
+        "zipCode": values.get(2).unwrap(),
+        "pref": values.get(6).unwrap(),
+        "prefKana": values.get(3).unwrap(),
+        "city": values.get(7).unwrap(),
+        "cityName": values.get(4).unwrap(),
+        "town": values.get(8).unwrap(),
+        "townName": values.get(5)
+    });
+    // 郵便番号を前3桁と後4桁に分離する
+    let zip_code = ZipCode::new(values.get(2).unwrap());
+    // 前3桁でディレクトリを作成
+    let target_dir = format!("{}/{}", PUBLISH_DIR, zip_code.pre);
+    if !Path::new(&target_dir).exists() {
+        match fs::create_dir(target_dir) {
+            Ok(_) => println!("📁New directory was created. {}", PUBLISH_DIR),
+            Err(error) => panic!("⚠Error occurs. {}", error),
+        };
+    }
+    // JSONファイルを保存する
+    let file_path = format!("{}/{}/{}.json", PUBLISH_DIR, zip_code.pre, zip_code.post);
+    let mut file = fs::File::create(&file_path).unwrap();
+    match file.write_all(json.to_string().as_bytes()) {
+        Ok(_) => println!("🗒️New file was created. {}", &file_path),
+        Err(error) => panic!("⚠Error occurs. {}", error),
+    };
 }
