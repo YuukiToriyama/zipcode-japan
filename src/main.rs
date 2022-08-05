@@ -156,9 +156,9 @@ fn save_as_json(values: &StringRecord) {
         "pref": values.get(6).unwrap(),
         "prefKana": values.get(3).unwrap(),
         "city": values.get(7).unwrap(),
-        "cityName": values.get(4).unwrap(),
+        "cityKana": values.get(4).unwrap(),
         "town": values.get(8).unwrap(),
-        "townName": values.get(5)
+        "townKana": values.get(5)
     });
     // 郵便番号を前3桁と後4桁に分離する
     let zip_code = ZipCode::new(values.get(2).unwrap());
