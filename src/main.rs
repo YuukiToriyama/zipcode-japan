@@ -1,3 +1,6 @@
+mod zip_code;
+
+use crate::zip_code::ZipCode;
 use csv::StringRecord;
 use serde_json::json;
 use std::fs;
@@ -84,26 +87,6 @@ async fn main() {
                 Err(error) => panic!("⚠Error occurs. {}", error),
             }
         }
-    }
-}
-
-struct ZipCode {
-    pre: String,
-    post: String,
-}
-
-impl ZipCode {
-    fn new(str: &str) -> Self {
-        let mut pre = String::new();
-        let mut post = String::new();
-        for (index, char) in str.chars().enumerate() {
-            if index <= 2 {
-                pre.push(char);
-            } else {
-                post.push(char);
-            }
-        }
-        ZipCode { pre, post }
     }
 }
 
