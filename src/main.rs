@@ -3,6 +3,7 @@ mod zip_code;
 
 use crate::zip_code::ZipCode;
 use csv::StringRecord;
+use hwc_conv::HWConv;
 use serde_json::json;
 use std::fs;
 use std::io::Write;
@@ -134,15 +135,19 @@ fn unzip_archive(file_path: &String) -> Result<String, zip::result::ZipError> {
 }
 
 fn save_as_json(values: &StringRecord) {
+    // 半角カタカナのフィールドを全角カタカナに変換
+    let pref_kana = HWConv::new(values.get(3).unwrap());
+    let city_kana = HWConv::new(values.get(4).unwrap());
+    let town_kana = HWConv::new(values.get(5).unwrap());
     // JSON構造体を作成
     let json = json!({
         "zipCode": values.get(2).unwrap(),
         "pref": values.get(6).unwrap(),
-        "prefKana": values.get(3).unwrap(),
+        "prefKana": pref_kana.to_fullwidth(),
         "city": values.get(7).unwrap(),
-        "cityKana": values.get(4).unwrap(),
+        "cityKana": city_kana.to_fullwidth(),
         "town": values.get(8).unwrap(),
-        "townKana": values.get(5)
+        "townKana": town_kana.to_fullwidth(),
     });
     // 郵便番号を前3桁と後4桁に分離する
     let zip_code = ZipCode::new(values.get(2).unwrap());
