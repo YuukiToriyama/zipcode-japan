@@ -70,7 +70,7 @@ async fn main() {
         Err(error) => panic!("⚠Error occurs. {}", error),
     }
     // 生成したJSONファイルを保存するディレクトリを作成
-    match fs::create_dir(PUBLISH_DIR) {
+    match fs::create_dir_all(PUBLISH_DIR) {
         Ok(_) => println!("📁New directory was created. {}", PUBLISH_DIR),
         Err(error) => panic!("⚠Error occurs. {}", error),
     }
