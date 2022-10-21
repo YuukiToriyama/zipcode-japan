@@ -60,7 +60,7 @@ const FILE_NAMES: [&str; 47] = [
     "47okinaw.zip", //沖縄県版郵便番号データ
 ];
 const TEMPORARY_DIR: &str = "./temp";
-const PUBLISH_DIR: &str = "./public";
+const PUBLISH_DIR: &str = "./public/v0.3";
 
 #[tokio::main]
 async fn main() {
