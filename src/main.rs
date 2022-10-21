@@ -1,3 +1,4 @@
+mod hwc_conv;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
