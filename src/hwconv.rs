@@ -143,7 +143,7 @@ enum Character {
 
 #[cfg(test)]
 mod tests {
-    use crate::hwc_conv::HWConv;
+    use crate::hwconv::HWConv;
 
     #[test]
     fn new() {
