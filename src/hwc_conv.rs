@@ -13,112 +13,132 @@ impl HWConv {
     pub fn to_fullwidth(self: &Self) -> String {
         let mut characters: Vec<char> = vec![];
         for c in &self.characters {
-            let fullwidth_character: char = match c {
-                'ｦ' => 'ヲ',
-                'ｧ' => 'ァ',
-                'ｨ' => 'ィ',
-                'ｩ' => 'ゥ',
-                'ｪ' => 'ェ',
-                'ｫ' => 'ォ',
-                'ｬ' => 'ャ',
-                'ｭ' => 'ュ',
-                'ｮ' => 'ョ',
-                'ｯ' => 'ッ',
-                'ｱ' => 'ア',
-                'ｲ' => 'イ',
-                'ｳ' => 'ウ',
-                'ｴ' => 'エ',
-                'ｵ' => 'オ',
-                'ｶ' => 'カ',
-                'ｷ' => 'キ',
-                'ｸ' => 'ク',
-                'ｹ' => 'ケ',
-                'ｺ' => 'コ',
-                'ｻ' => 'サ',
-                'ｼ' => 'シ',
-                'ｽ' => 'ス',
-                'ｾ' => 'セ',
-                'ｿ' => 'ソ',
-                'ﾀ' => 'タ',
-                'ﾁ' => 'チ',
-                'ﾂ' => 'ツ',
-                'ﾃ' => 'テ',
-                'ﾄ' => 'ト',
-                'ﾅ' => 'ナ',
-                'ﾆ' => 'ニ',
-                'ﾇ' => 'ヌ',
-                'ﾈ' => 'ネ',
-                'ﾉ' => 'ノ',
-                'ﾊ' => 'ハ',
-                'ﾋ' => 'ヒ',
-                'ﾌ' => 'フ',
-                'ﾍ' => 'ヘ',
-                'ﾎ' => 'ホ',
-                'ﾏ' => 'マ',
-                'ﾐ' => 'ミ',
-                'ﾑ' => 'ム',
-                'ﾒ' => 'メ',
-                'ﾓ' => 'モ',
-                'ﾔ' => 'ヤ',
-                'ﾕ' => 'ユ',
-                'ﾖ' => 'ヨ',
-                'ﾗ' => 'ラ',
-                'ﾘ' => 'リ',
-                'ﾙ' => 'ル',
-                'ﾚ' => 'レ',
-                'ﾛ' => 'ロ',
-                'ﾜ' => 'ワ',
-                'ﾝ' => 'ン',
-                'ﾞ' => {
-                    let latest: char = characters.pop().unwrap();
-                    match latest {
-                        'カ' => 'ガ',
-                        'キ' => 'ギ',
-                        'ク' => 'グ',
-                        'ケ' => 'ゲ',
-                        'コ' => 'ゴ',
-                        'サ' => 'ザ',
-                        'シ' => 'ジ',
-                        'ス' => 'ズ',
-                        'セ' => 'ゼ',
-                        'ソ' => 'ゾ',
-                        'タ' => 'ダ',
-                        'チ' => 'ヂ',
-                        'ツ' => 'ヅ',
-                        'テ' => 'デ',
-                        'ト' => 'ド',
-                        'ハ' => 'バ',
-                        'ヒ' => 'ビ',
-                        'フ' => 'ブ',
-                        'ヘ' => 'ベ',
-                        'ホ' => 'ボ',
-                        'ウ' => 'ヴ',
-                        _ => {
-                            characters.push(latest);
-                            '゛'
-                        }
-                    }
-                }
-                'ﾟ' => {
-                    let latest: char = characters.pop().unwrap();
-                    match latest {
-                        'ハ' => 'パ',
-                        'ヒ' => 'ピ',
-                        'フ' => 'プ',
-                        'ヘ' => 'ペ',
-                        'ホ' => 'ポ',
-                        _ => {
-                            characters.push(latest);
-                            '゜'
-                        }
-                    }
-                }
-                other => *other,
+            let fullwidth_character: char = match Self::halfwidth_to_fullwidth(c) {
+                Character::Kana(v) => v,
+                Character::Dakuten => Self::dakuon_matcher(&mut characters),
+                Character::Handakuten => Self::handakuon_matcher(&mut characters),
+                Character::Others(v) => v,
             };
             characters.push(fullwidth_character);
         }
         characters.iter().collect::<String>()
     }
+
+    fn halfwidth_to_fullwidth(c: &char) -> Character {
+        match c {
+            'ｦ' => Character::Kana('ヲ'),
+            'ｧ' => Character::Kana('ァ'),
+            'ｨ' => Character::Kana('ィ'),
+            'ｩ' => Character::Kana('ゥ'),
+            'ｪ' => Character::Kana('ェ'),
+            'ｫ' => Character::Kana('ォ'),
+            'ｬ' => Character::Kana('ャ'),
+            'ｭ' => Character::Kana('ュ'),
+            'ｮ' => Character::Kana('ョ'),
+            'ｯ' => Character::Kana('ッ'),
+            'ｱ' => Character::Kana('ア'),
+            'ｲ' => Character::Kana('イ'),
+            'ｳ' => Character::Kana('ウ'),
+            'ｴ' => Character::Kana('エ'),
+            'ｵ' => Character::Kana('オ'),
+            'ｶ' => Character::Kana('カ'),
+            'ｷ' => Character::Kana('キ'),
+            'ｸ' => Character::Kana('ク'),
+            'ｹ' => Character::Kana('ケ'),
+            'ｺ' => Character::Kana('コ'),
+            'ｻ' => Character::Kana('サ'),
+            'ｼ' => Character::Kana('シ'),
+            'ｽ' => Character::Kana('ス'),
+            'ｾ' => Character::Kana('セ'),
+            'ｿ' => Character::Kana('ソ'),
+            'ﾀ' => Character::Kana('タ'),
+            'ﾁ' => Character::Kana('チ'),
+            'ﾂ' => Character::Kana('ツ'),
+            'ﾃ' => Character::Kana('テ'),
+            'ﾄ' => Character::Kana('ト'),
+            'ﾅ' => Character::Kana('ナ'),
+            'ﾆ' => Character::Kana('ニ'),
+            'ﾇ' => Character::Kana('ヌ'),
+            'ﾈ' => Character::Kana('ネ'),
+            'ﾉ' => Character::Kana('ノ'),
+            'ﾊ' => Character::Kana('ハ'),
+            'ﾋ' => Character::Kana('ヒ'),
+            'ﾌ' => Character::Kana('フ'),
+            'ﾍ' => Character::Kana('ヘ'),
+            'ﾎ' => Character::Kana('ホ'),
+            'ﾏ' => Character::Kana('マ'),
+            'ﾐ' => Character::Kana('ミ'),
+            'ﾑ' => Character::Kana('ム'),
+            'ﾒ' => Character::Kana('メ'),
+            'ﾓ' => Character::Kana('モ'),
+            'ﾔ' => Character::Kana('ヤ'),
+            'ﾕ' => Character::Kana('ユ'),
+            'ﾖ' => Character::Kana('ヨ'),
+            'ﾗ' => Character::Kana('ラ'),
+            'ﾘ' => Character::Kana('リ'),
+            'ﾙ' => Character::Kana('ル'),
+            'ﾚ' => Character::Kana('レ'),
+            'ﾛ' => Character::Kana('ロ'),
+            'ﾜ' => Character::Kana('ワ'),
+            'ﾝ' => Character::Kana('ン'),
+            'ﾞ' => Character::Dakuten,
+            'ﾟ' => Character::Handakuten,
+            other => Character::Others(other.clone()),
+        }
+    }
+
+    fn handakuon_matcher(characters: &mut Vec<char>) -> char {
+        let latest: char = characters.pop().unwrap();
+        match latest {
+            'ハ' => 'パ',
+            'ヒ' => 'ピ',
+            'フ' => 'プ',
+            'ヘ' => 'ペ',
+            'ホ' => 'ポ',
+            _ => {
+                characters.push(latest);
+                '゜'
+            }
+        }
+    }
+
+    fn dakuon_matcher(characters: &mut Vec<char>) -> char {
+        let latest: char = characters.pop().unwrap();
+        match latest {
+            'カ' => 'ガ',
+            'キ' => 'ギ',
+            'ク' => 'グ',
+            'ケ' => 'ゲ',
+            'コ' => 'ゴ',
+            'サ' => 'ザ',
+            'シ' => 'ジ',
+            'ス' => 'ズ',
+            'セ' => 'ゼ',
+            'ソ' => 'ゾ',
+            'タ' => 'ダ',
+            'チ' => 'ヂ',
+            'ツ' => 'ヅ',
+            'テ' => 'デ',
+            'ト' => 'ド',
+            'ハ' => 'バ',
+            'ヒ' => 'ビ',
+            'フ' => 'ブ',
+            'ヘ' => 'ベ',
+            'ホ' => 'ボ',
+            'ウ' => 'ヴ',
+            _ => {
+                characters.push(latest);
+                '゛'
+            }
+        }
+    }
+}
+
+enum Character {
+    Kana(char),
+    Dakuten,
+    Handakuten,
+    Others(char),
 }
 
 #[cfg(test)]
