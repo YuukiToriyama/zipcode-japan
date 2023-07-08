@@ -1,16 +1,14 @@
 mod constants;
 mod entities;
-mod utils;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
-use constants::RESOURCE_URL;
+use constants::{PUBLISH_DIR, RESOURCE_URL, TEMPORARY_DIR};
 use entities::ZipCodeEntity;
 use serde_json::json;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
-use utils::{PUBLISH_DIR, TEMPORARY_DIR};
 
 #[tokio::main]
 async fn main() {
