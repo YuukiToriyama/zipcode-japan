@@ -1,8 +1,10 @@
+mod constants;
 mod hwconv;
 mod utils;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
+use constants::RESOURCE_URL;
 use csv::StringRecord;
 use std::fs;
 use std::io::Write;
@@ -36,6 +38,13 @@ async fn main() {
                 Err(error) => panic!("⚠Error occurs. {}", error),
             }
         }
+    }
+}
+
+async fn fetch_resource() -> Result<String, reqwest::Error> {
+    match reqwest::get(RESOURCE_URL).await {
+        Ok(response) => response.text().await,
+        Err(_error) => panic!("ファイルを取得できませんでした。 {}", RESOURCE_URL),
     }
 }
 
