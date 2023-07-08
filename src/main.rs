@@ -1,11 +1,13 @@
 mod constants;
+mod entities;
 mod hwconv;
 mod utils;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
 use constants::RESOURCE_URL;
-use csv::StringRecord;
+use entities::ZipCodeEntity;
+use serde_json::json;
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -90,10 +92,10 @@ fn unzip_archive(file_path: &String) -> Result<String, zip::result::ZipError> {
     Ok(file_path)
 }
 
-fn save_as_json(values: &StringRecord) {
-    let json = utils::convert_record_to_json(values);
+fn save_as_json(entity: ZipCodeEntity) {
     // 郵便番号を前3桁と後4桁に分離する
-    let zip_code = ZipCode::new(values.get(2).unwrap());
+    let zip_code = ZipCode::new(&entity.postal_code);
+
     // 前3桁でディレクトリを作成
     let target_dir = format!("{}/{}", PUBLISH_DIR, zip_code.pre);
     if !Path::new(&target_dir).exists() {
@@ -102,6 +104,18 @@ fn save_as_json(values: &StringRecord) {
             Err(error) => panic!("⚠Error occurs. {}", error),
         };
     }
+
+    // JSONを作成
+    let json = json!({
+        "zipCode": entity.postal_code,
+        "pref": entity.pref,
+        "prefKana": entity.pref_kana,
+        "city": entity.city,
+        "cityKana": entity.city_kana,
+        "town": entity.town,
+        "townKana": entity.town_kana,
+    });
+
     // JSONファイルを保存する
     let file_path = format!("{}/{}/{}.json", PUBLISH_DIR, zip_code.pre, zip_code.post);
     let mut file = fs::File::create(&file_path).unwrap();
