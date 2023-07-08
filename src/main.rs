@@ -50,6 +50,17 @@ async fn fetch_resource() -> Result<String, reqwest::Error> {
     }
 }
 
+fn parse_csv_and_save_as_json(csv_string: String) {
+    let mut reader = csv::Reader::from_reader(csv_string.as_bytes());
+    for record in reader.deserialize() {
+        let record: ZipCodeEntity = match record {
+            Ok(entity) => entity,
+            Err(error) => panic!("⚠Error occurs. {}", error),
+        };
+        save_as_json(record);
+    }
+}
+
 async fn fetch_archive(file_name: &str) -> Result<String, Box<dyn std::error::Error>> {
     // 郵便局のサイトからzipファイルをダウンロード
     let url = format!("{}/{}", BASE_URL, file_name);
