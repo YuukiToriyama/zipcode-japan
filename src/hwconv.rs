@@ -10,7 +10,7 @@ impl HWConv {
         HWConv { characters }
     }
 
-    pub fn to_fullwidth(self: &Self) -> String {
+    pub fn to_fullwidth(&self) -> String {
         let mut characters: Vec<char> = vec![];
         for c in &self.characters {
             let fullwidth_character: char = match Self::halfwidth_to_fullwidth(c) {
@@ -83,7 +83,7 @@ impl HWConv {
             'ﾝ' => Character::Kana('ン'),
             'ﾞ' => Character::Dakuten,
             'ﾟ' => Character::Handakuten,
-            other => Character::Others(other.clone()),
+            other => Character::Others(*other),
         }
     }
 
