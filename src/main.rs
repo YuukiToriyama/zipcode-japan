@@ -1,11 +1,9 @@
 mod constants;
-mod entities;
 mod ken_all;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
 use constants::{PUBLISH_DIR, RESOURCE_URL, TEMPORARY_DIR};
-use entities::ZipCodeEntity;
 use serde_json::json;
 use std::fs;
 use std::io::Write;
@@ -46,13 +44,29 @@ fn parse_csv_and_save_as_json(csv_string: String) {
             Ok(entity) => entity,
             Err(error) => panic!("⚠Error occurs. {}", error),
         };
-        save_as_json(record);
+        generate_json(
+            record.postal_code,
+            record.pref,
+            record.pref_kana,
+            record.city,
+            record.city_kana,
+            record.town,
+            record.town_kana,
+        );
     }
 }
 
-fn save_as_json(entity: ZipCodeEntity) {
+fn generate_json(
+    postal_code: String,
+    pref: String,
+    pref_kana: String,
+    city: String,
+    city_kana: String,
+    town: String,
+    town_kana: String,
+) {
     // 郵便番号を前3桁と後4桁に分離する
-    let zip_code = ZipCode::new(&entity.postal_code);
+    let zip_code = ZipCode::new(&postal_code);
 
     // 前3桁でディレクトリを作成
     let target_dir = format!("{}/{}", PUBLISH_DIR, zip_code.pre);
@@ -65,13 +79,13 @@ fn save_as_json(entity: ZipCodeEntity) {
 
     // JSONを作成
     let json = json!({
-        "zipCode": entity.postal_code,
-        "pref": entity.pref,
-        "prefKana": entity.pref_kana,
-        "city": entity.city,
-        "cityKana": entity.city_kana,
-        "town": entity.town,
-        "townKana": entity.town_kana,
+        "zipCode": postal_code,
+        "pref": pref,
+        "prefKana": pref_kana,
+        "city": city,
+        "cityKana": city_kana,
+        "town": town,
+        "townKana": town_kana,
     });
 
     // JSONファイルを保存する
