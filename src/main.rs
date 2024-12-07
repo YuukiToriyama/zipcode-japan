@@ -4,6 +4,8 @@ mod zip_code;
 
 use crate::zip_code::ZipCode;
 use constants::{PUBLISH_DIR, RESOURCE_URL, TEMPORARY_DIR};
+use polars::frame::row::Row;
+use polars::prelude::IntoLazy;
 use serde_json::json;
 use std::fs;
 use std::io::Write;
@@ -24,35 +26,30 @@ async fn main() {
     }
 
     // CSVを取得
-    let csv_string = fetch_resource().await.unwrap();
-
-    // CSVをパースしてJSONとして保存
-    parse_csv_and_save_as_json(csv_string);
+    let path = ken_all::get_csv()
+        .await
+        .expect("utf_all.csvのダウンロードに失敗しました");
+    // DataFrameに変換
+    let data_frame = ken_all::read_csv(path);
+    // JSONファイルに書き出し
+    for index in 0..data_frame.height() {
+        let Row(vec) = data_frame.get_row(index).unwrap();
+        generate_json(
+            vec[0].get_str().unwrap().to_string(),
+            vec[1].get_str().unwrap().to_string(),
+            vec[2].get_str().unwrap().to_string(),
+            vec[3].get_str().unwrap().to_string(),
+            vec[4].get_str().unwrap().to_string(),
+            vec[5].get_str().unwrap().to_string(),
+            vec[6].get_str().unwrap().to_string(),
+        );
+    }
 }
 
 async fn fetch_resource() -> Result<String, reqwest::Error> {
     match reqwest::get(RESOURCE_URL).await {
         Ok(response) => response.text().await,
         Err(_error) => panic!("ファイルを取得できませんでした。 {}", RESOURCE_URL),
-    }
-}
-
-fn parse_csv_and_save_as_json(csv_string: String) {
-    let mut reader = csv::Reader::from_reader(csv_string.as_bytes());
-    for record in reader.deserialize() {
-        let record: ZipCodeEntity = match record {
-            Ok(entity) => entity,
-            Err(error) => panic!("⚠Error occurs. {}", error),
-        };
-        generate_json(
-            record.postal_code,
-            record.pref,
-            record.pref_kana,
-            record.city,
-            record.city_kana,
-            record.town,
-            record.town_kana,
-        );
     }
 }
 

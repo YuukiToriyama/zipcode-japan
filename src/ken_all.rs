@@ -6,7 +6,7 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 
-async fn get_csv() -> Result<&'static Path, Error> {
+pub(crate) async fn get_csv() -> Result<&'static Path, Error> {
     let path = Path::new("temp/utf_all.csv");
     let mut file = File::create(path).unwrap();
     let response = reqwest::get(RESOURCE_URL).await?.bytes().await?;
@@ -14,7 +14,7 @@ async fn get_csv() -> Result<&'static Path, Error> {
     Ok(path)
 }
 
-fn read_csv(path: &Path) -> DataFrame {
+pub(crate) fn read_csv(path: &Path) -> DataFrame {
     let scheme = Schema::from_iter(vec![
         Field::new("jisx0402".into(), DataType::String),
         Field::new("old_postal_code".into(), DataType::String),
