@@ -1,6 +1,18 @@
+use crate::constants::RESOURCE_URL;
 use polars::frame::DataFrame;
 use polars::prelude::{col, DataType, Field, LazyCsvReader, LazyFileListReader, Schema};
+use reqwest::Error;
+use std::fs::File;
+use std::io;
 use std::path::Path;
+
+async fn get_csv() -> Result<&'static Path, Error> {
+    let path = Path::new("temp/utf_all.csv");
+    let mut file = File::create(path).unwrap();
+    let response = reqwest::get(RESOURCE_URL).await?.bytes().await?;
+    io::copy(&mut response.as_ref(), &mut file).unwrap();
+    Ok(path)
+}
 
 fn read_csv(path: &Path) -> DataFrame {
     let scheme = Schema::from_iter(vec![
