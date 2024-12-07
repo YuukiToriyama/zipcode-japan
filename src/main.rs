@@ -1,5 +1,6 @@
 mod constants;
 mod entities;
+mod ken_all;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
