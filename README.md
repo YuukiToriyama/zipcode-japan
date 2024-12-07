@@ -1,5 +1,7 @@
 # zipcode-japan
 
+[![Monthly Update](https://github.com/YuukiToriyama/zipcode-japan/actions/workflows/monthly_update.yaml/badge.svg)](https://github.com/YuukiToriyama/zipcode-japan/actions/workflows/monthly_update.yaml)
+
 ![https://i.imgur.com/jhDECiE.gif](https://i.imgur.com/jhDECiE.gif)
 
 (株)日本郵政の[郵便番号データダウンロード](https://www.post.japanpost.jp/zipcode/download.html)より取得した日本全国の郵便番号データを JSON 形式に加工し、
