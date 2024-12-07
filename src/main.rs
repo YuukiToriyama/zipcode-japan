@@ -3,9 +3,8 @@ mod ken_all;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
-use constants::{PUBLISH_DIR, RESOURCE_URL, TEMPORARY_DIR};
+use constants::{PUBLISH_DIR, TEMPORARY_DIR};
 use polars::frame::row::Row;
-use polars::prelude::IntoLazy;
 use serde_json::json;
 use std::fs;
 use std::io::Write;
@@ -43,13 +42,6 @@ async fn main() {
             vec[5].get_str().unwrap().to_string(),
             vec[6].get_str().unwrap().to_string(),
         );
-    }
-}
-
-async fn fetch_resource() -> Result<String, reqwest::Error> {
-    match reqwest::get(RESOURCE_URL).await {
-        Ok(response) => response.text().await,
-        Err(_error) => panic!("ファイルを取得できませんでした。 {}", RESOURCE_URL),
     }
 }
 
