@@ -37,7 +37,7 @@ pub(crate) fn read_csv(path: &Path) -> DataFrame {
         .with_schema(Some(scheme.into()))
         .finish()
         .unwrap();
-    let data_frame = lazy_frame
+    lazy_frame
         .select([
             col("postal_code"),
             col("pref"),
@@ -48,8 +48,7 @@ pub(crate) fn read_csv(path: &Path) -> DataFrame {
             col("town_kana"),
         ])
         .collect()
-        .unwrap();
-    data_frame
+        .unwrap()
 }
 
 #[cfg(test)]
