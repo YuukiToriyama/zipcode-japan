@@ -1,10 +1,10 @@
 mod constants;
-mod ken_all;
+mod entities;
 mod zip_code;
 
 use crate::zip_code::ZipCode;
-use constants::{PUBLISH_DIR, TEMPORARY_DIR};
-use polars::frame::row::Row;
+use constants::{PUBLISH_DIR, RESOURCE_URL, TEMPORARY_DIR};
+use entities::ZipCodeEntity;
 use serde_json::json;
 use std::fs;
 use std::io::Write;
@@ -25,37 +25,33 @@ async fn main() {
     }
 
     // CSVを取得
-    let path = ken_all::get_csv()
-        .await
-        .expect("utf_all.csvのダウンロードに失敗しました");
-    // DataFrameに変換
-    let data_frame = ken_all::read_csv(path);
-    // JSONファイルに書き出し
-    for index in 0..data_frame.height() {
-        let Row(vec) = data_frame.get_row(index).unwrap();
-        generate_json(
-            vec[0].get_str().unwrap().to_string(),
-            vec[1].get_str().unwrap().to_string(),
-            vec[2].get_str().unwrap().to_string(),
-            vec[3].get_str().unwrap().to_string(),
-            vec[4].get_str().unwrap().to_string(),
-            vec[5].get_str().unwrap().to_string(),
-            vec[6].get_str().unwrap().to_string(),
-        );
+    let csv_string = fetch_resource().await.unwrap();
+
+    // CSVをパースしてJSONとして保存
+    parse_csv_and_save_as_json(csv_string);
+}
+
+async fn fetch_resource() -> Result<String, reqwest::Error> {
+    match reqwest::get(RESOURCE_URL).await {
+        Ok(response) => response.text().await,
+        Err(_error) => panic!("ファイルを取得できませんでした。 {}", RESOURCE_URL),
     }
 }
 
-fn generate_json(
-    postal_code: String,
-    pref: String,
-    pref_kana: String,
-    city: String,
-    city_kana: String,
-    town: String,
-    town_kana: String,
-) {
+fn parse_csv_and_save_as_json(csv_string: String) {
+    let mut reader = csv::Reader::from_reader(csv_string.as_bytes());
+    for record in reader.deserialize() {
+        let record: ZipCodeEntity = match record {
+            Ok(entity) => entity,
+            Err(error) => panic!("⚠Error occurs. {}", error),
+        };
+        save_as_json(record);
+    }
+}
+
+fn save_as_json(entity: ZipCodeEntity) {
     // 郵便番号を前3桁と後4桁に分離する
-    let zip_code = ZipCode::new(&postal_code);
+    let zip_code = ZipCode::new(&entity.postal_code);
 
     // 前3桁でディレクトリを作成
     let target_dir = format!("{}/{}", PUBLISH_DIR, zip_code.pre);
@@ -68,13 +64,13 @@ fn generate_json(
 
     // JSONを作成
     let json = json!({
-        "zipCode": postal_code,
-        "pref": pref,
-        "prefKana": pref_kana,
-        "city": city,
-        "cityKana": city_kana,
-        "town": town,
-        "townKana": town_kana,
+        "zipCode": entity.postal_code,
+        "pref": entity.pref,
+        "prefKana": entity.pref_kana,
+        "city": entity.city,
+        "cityKana": entity.city_kana,
+        "town": entity.town,
+        "townKana": entity.town_kana,
     });
 
     // JSONファイルを保存する
